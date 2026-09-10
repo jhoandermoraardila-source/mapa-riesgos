@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prototipo Interactivo - Denuncios Claro con Dashboard</title>
+    <style>
+        :root {
+            --claro-red: #DA291C;
+            --claro-dark: #222222;
+            --bg-gray: #F4F5F7;
+            --white: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            color: #333;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 260px;
+            background: var(--white);
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-container {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .logo-claro {
+            width: 70px;
+            height: 70px;
+            background: var(--claro-red);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 4px 10px rgba(218, 41, 28, 0.3);
+        }
+
+        .menu-lateral {
+            padding: 20px 10px;
+            list-style: none;
+        }
+
+        .menu-lateral li {
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .menu-lateral li.active {
+            background-color: var(--claro-red);
+            color: white;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        topbar {
+            background: var(--white);
+            height: 70px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+        }
+
+        .role-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .role-selector select {
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .user-badge {
+            background: #ffe6e5;
+            color: var(--claro-red);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .view-container {
+            padding: 30px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .actions-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tabs-tecnologia {
+            display: flex;
+            gap: 10px;
+            background: #e9ecef;
+            padding: 4px;
+            border-radius: 6px;
+        }
+
+        .tab-tec {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 4px;
+            border: none;
+            background: transparent;
+            color: #555;
+        }
+
+        .tab-tec.active {
+            background: var(--claro-red);
+            color: white;
+        }
+
+        .actions-right-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-claro {
+            background-color: var(--claro-red);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-claro:hover {
+            opacity: 0.9;
+        }
+
+        .btn-dashboard {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .btn-export {
+            background-color: #28a745;
+            color: white;
+            border: none;
+        }
+
+        .table-card {
+            background: var(--white);
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 15px;
+            color: #666;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .badge-status {
+            background: #ffe6e5;
+            color: var(--claro-red);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-ofsc {
+            background: #d4edda;
+            color: #155724;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .breadcrumb {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 20px;
+        }
+
+        /* ESTILOS DEL DASHBOARD */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .kpi-card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .kpi-title {
+            font-size: 13px;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--claro-dark);
+        }
+
+        .kpi-value.red {
+            color: var(--claro-red);
+        }
+
+        .dashboard-charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .chart-card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .chart-card h4 {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 8px;
+        }
+
+        .bar-chart-mock {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .bar-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .bar-label-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .bar-track {
+            background: #e9ecef;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            background: var(--claro-red);
+            height: 100%;
+            border-radius: 6px;
+        }
+
+        .filters-grid {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .filter-group input, .filter-group select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .form-section-card {
+            background: var(--white);
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .form-section-card h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .form-grid-full {
+            grid-column: span 4;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            background: #fafafa;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            height: 90px;
+        }
+
+        .sub-box {
+            background: #fdfdfd;
+            border: 1px dashed #ccc;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 5px;
+        }
+
+        .grid-fotos {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .foto-card-visual {
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .foto-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #555;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn-ver-foto {
+            background: #DA291C;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            margin-bottom: 40px;
+        }
+
+        .actions-right {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-volver {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .admin-box {
+            background: #fff8f8;
+            border: 1px solid #ffcccc;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="logo-container">
+            <div class="logo-claro">Claro</div>
+        </div>
+        <ul class="menu-lateral">
+            <li>Mi Cuenta</li>
+            <li id="menu-admin-item" class="hidden" onclick="cambiarVista('admin-costos')">⚙️ Configurar Costos (Super Admin)</li>
+            <li id="menu-tabla-item" class="active" onclick="cambiarVista('tabla')">Denuncios</li>
+            <li id="menu-dashboard-item" onclick="cambiarVista('dashboard')">📊 Dashboard Analítico</li>
+        </ul>
+    </aside>
+
+    <main>
+        <topbar>
+            <div class="role-selector">
+                <label>Simular Rol:</label>
+                <select id="selector-rol" onchange="cambiarRol(this.value)">
+                    <option value="analista">Analista Regional</option>
+                    <option value="superadmin">Super Administrador</option>
+                </select>
+            </div>
+            <div class="user-badge" id="badge-rol-usuario">JEMA (Analista)</div>
+        </topbar>
+
+        <div class="view-container">
+
+            <!-- VISTA 1: TABLA DE DENUNCIOS Y FILTROS -->
+            <div id="vista-tabla">
+                <div class="actions-bar">
+                    <div class="tabs-tecnologia">
+                        <button class="tab-tec active" onclick="filtrarTecnologia(this, 'movil')">Red Móvil</button>
+                        <button class="tab-tec" onclick="filtrarTecnologia(this, 'fibra')">Fibra Óptica</button>
+                        <button class="tab-tec" onclick="filtrarTecnologia(this, 'hfc')">Red Fija/HFC</button>
+                    </div>
+                    <div class="actions-right-group">
+                        <button class="btn-claro btn-dashboard" onclick="cambiarVista('dashboard')">
+                            📈 Dashboard
+                        </button>
+                        <button class="btn-claro btn-export" onclick="alert('Exportando listado completo a Excel...')">
+                            📊 Exportar
+                        </button>
+                        <button class="btn-claro" onclick="cambiarVista('formulario')">
+                            + Denuncio
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Barra de Filtros de Búsqueda -->
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label>Consecutivo</label>
+                        <input type="text" placeholder="Ej. DEB 3587">
+                    </div>
+                    <div class="filter-group">
+                        <label>Nº Atención OT / Incidente</label>
+                        <input type="text" placeholder="Ej. 987654">
+                    </div>
+                    <div class="filter-group">
+                        <label>Ciudad</label>
+                        <input type="text" placeholder="Ej. Granada">
+                    </div>
+                    <div class="filter-group">
+                        <label>Regional</label>
+                        <select>
+                            <option value="">Todas las regionales</option>
+                            <option value="R1">R1-Costa</option>
+                            <option value="R4">R4-Centro</option>
+                            <option value="R5">R5-Nororiente</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Nombre estación base</label>
+                        <input type="text" placeholder="Ej. EB_Granada">
+                    </div>
+                    <div class="filter-group">
+                        <label>Estado</label>
+                        <select>
+                            <option value="">Todos los estados</option>
+                            <option value="proceso">En proceso</option>
+                            <option value="completado">Completado</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Año</label>
+                        <select>
+                            <option value="2026">2026</option>
+                            <option value="2025">2025</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" style="display: flex; align-items: flex-end;">
+                        <button class="btn-claro" style="width: 100%; padding: 8px; justify-content: center;" onclick="alert('Aplicando filtros...')">🔍 Filtrar</button>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ACCIONES</th>
+                                <th>CONSECUTIVO</th>
+                                <th>ESTADO</th>
+                                <th>NOTIFICACIÓN OFSC</th>
+                                <th>FECHA RECEPCIÓN</th>
+                                <th>CIUDAD</th>
+                                <th>REGIONAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>✏️ 📅 📄</td>
+                                <td>DEB 3587</td>
+                                <td><span class="badge-status">En proceso</span></td>
+                                <td><span class="badge-ofsc">Enviado</span></td>
+                                <td>2026-09-09</td>
+                                <td>Granada</td>
+                                <td>R5-Nororiente</td>
+                            </tr>
+                            <tr>
+                                <td>✏️ 📅 📄</td>
+                                <td>DEB 3586</td>
+                                <td><span class="badge-status">En proceso</span></td>
+                                <td><span class="badge-ofsc">Enviado</span></td>
+                                <td>2026-09-09</td>
+                                <td>Tununguá</td>
+                                <td>R4-Centro</td>
+                            </tr>
+                            <tr>
+                                <td>✏️ 📅 📄</td>
+                                <td>DEB 3585</td>
+                                <td><span class="badge-status">En proceso</span></td>
+                                <td><span class="badge-ofsc">Enviado</span></td>
+                                <td>2026-09-09</td>
+                                <td>Girardota</td>
+                                <td>R2-Noroccidente</td>
+                            </tr>
+                            <tr>
+                                <td>✏️ 📅 📄</td>
+                                <td>DEB 3584</td>
+                                <td><span class="badge-status">En proceso</span></td>
+                                <td><span class="badge-ofsc">Enviado</span></td>
+                                <td>2026-09-08</td>
+                                <td>Sabanas de San Ángel</td>
+                                <td>R1-Costa</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+<!-- VISTA NUEVA: DASHBOARD ANALÍTICO -->
+            <div id="vista-dashboard" class="hidden">
+                <button class="btn-volver" onclick="cambiarVista('tabla')">⬅ Volver al listado de Denuncios</button>
+                <div class="breadcrumb">Reportes > Dashboard Analítico de Vandalismo y Hurtos (2016 - 2026)</div>
+
+                <!-- Barra de Filtros Superior Avanzada -->
+                <div class="filters-bar" style="display: flex; gap: 12px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 10px; font-weight: bold; color: #666; text-transform: uppercase;">📍 Regional</label>
+                        <select style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; min-width: 130px;">
+                            <option value="">Todas</option>
+                            <option value="bogota">Bogotá</option>
+                            <option value="caribe">Caribe</option>
+                            <option value="antioquia">Antioquia</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 10px; font-weight: bold; color: #666; text-transform: uppercase;">🏢 Ciudad</label>
+                        <select style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; min-width: 130px;">
+                            <option value="">Todas</option>
+                            <option value="bogota_dc">Bogotá D.C.</option>
+                            <option value="valledupar">Valledupar</option>
+                            <option value="cartagena">Cartagena D.C.</option>
+                            <option value="santa_marta">Santa Marta</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 10px; font-weight: bold; color: #666; text-transform: uppercase;">📅 Año</label>
+                        <select style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; min-width: 110px;">
+                            <option value="">Todas</option>
+                            <option value="2026">2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2020">2020</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 10px; font-weight: bold; color: #666; text-transform: uppercase;">📅 Mes</label>
+                        <select style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; min-width: 110px;">
+                            <option value="">Todas</option>
+                            <option value="enero">Enero</option>
+                            <option value="febrero">Febrero</option>
+                            <option value="marzo">Marzo</option>
+                            <option value="abril">Abril</option>
+                            <option value="mayo">Mayo</option>
+                            <option value="junio">Junio</option>
+                            <option value="julio">Julio</option>
+                            <option value="agosto">Agosto</option>
+                            <option value="septiembre">Septiembre</option>
+                            <option value="octubre">Octubre</option>
+                            <option value="noviembre">Noviembre</option>
+                            <option value="diciembre">Diciembre</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 10px; font-weight: bold; color: #666; text-transform: uppercase;">⚡ Tipo Activo</label>
+                        <select style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; min-width: 130px;">
+                            <option value="">Todos</option>
+                            <option value="bateria_plomo">Baterías Plomo</option>
+                            <option value="bateria_litio">Baterías Litio</option>
+                            <option value="pe_completa">PE Completa</option>
+                            <option value="partes_pe">Partes PE</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 10px; font-weight: bold; color: #666; text-transform: uppercase;">🗺️ Zona</label>
+                        <select style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; min-width: 110px;">
+                            <option value="">Todas</option>
+                            <option value="rural">Rural</option>
+                            <option value="urbano">Urbano</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-left: auto; display: flex; align-items: flex-end; height: 100%;">
+                        <button style="background: #f5f5f5; border: 1px solid #ddd; padding: 7px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; color: #333;" onclick="document.querySelectorAll('.filters-bar select').forEach(s => s.value = '');">
+                            🧹 Limpiar filtros
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tarjetas KPI Principales (6 Bloques Ejecutivos) -->
+                <div class="dashboard-grid" style="grid-template-columns: repeat(6, 1fr); margin-bottom: 20px;">
+                    <div class="kpi-card">
+                        <div class="kpi-title">Costo Total Pérdidas</div>
+                        <div class="kpi-value red" style="font-size: 17px;">$ 89.9M</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">Total Incidentes</div>
+                        <div class="kpi-value">3.620</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">Costo Promedio / Inc.</div>
+                        <div class="kpi-value" style="font-size: 17px;">$ 24.834</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">Baterías Litio</div>
+                        <div class="kpi-value">4.502</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">Baterías Plomo</div>
+                        <div class="kpi-value">16.458</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">Plantas / Partes PE</div>
+                        <div class="kpi-value">1.601</div>
+                    </div>
+                </div>
+
+                <!-- Fila 1 de Gráficos Analíticos (Tendencias Históricas y Comparativas) -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
+                    <div class="chart-card">
+                        <h4>Cantidad Hurtos por Año</h4>
+                        <div style="font-size: 12px; color: #666; height: 160px; display: flex; align-items: flex-end; justify-content: space-around; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                            <div style="text-align: center;"><span style="display:block; font-size:10px;">612</span><div style="background:var(--claro-red); width:20px; height:90px;"></div><span style="font-size:10px;">2020</span></div>
+                            <div style="text-align: center;"><span style="display:block; font-size:10px;">487</span><div style="background:var(--claro-red); width:20px; height:70px;"></div><span style="font-size:10px;">2021</span></div>
+                            <div style="text-align: center;"><span style="display:block; font-size:10px;">283</span><div style="background:var(--claro-red); width:20px; height:40px;"></div><span style="font-size:10px;">2022</span></div>
+                            <div style="text-align: center;"><span style="display:block; font-size:10px;">358</span><div style="background:var(--claro-red); width:20px; height:50px;"></div><span style="font-size:10px;">2024</span></div>
+                            <div style="text-align: center;"><span style="display:block; font-size:10px;">112</span><div style="background:var(--claro-red); width:20px; height:20px;"></div><span style="font-size:10px;">2026</span></div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h4>Hurtos 2026 vs 2025 (Barras Agrupadas)</h4>
+                        <div style="font-size: 12px; color: #666; height: 160px; display: flex; align-items: flex-end; justify-content: space-around; border-bottom: 1px solid #eee; padding-bottom: 5px; position: relative;">
+                            <div style="display: flex; gap: 3px; align-items: flex-end; text-align: center; position: relative;">
+                                <div title="2025" style="background:#666666; width:12px; height:60px;"></div>
+                                <div title="2026" style="background:var(--claro-red); width:12px; height:40px;"></div>
+                                <span style="position: absolute; bottom: -18px; font-size: 9px; width: 40px; margin-left: -14px;">Ene</span>
+                            </div>
+                            <div style="display: flex; gap: 3px; align-items: flex-end; text-align: center; position: relative;">
+                                <div title="2025" style="background:#666666; width:12px; height:75px;"></div>
+                                <div title="2026" style="background:var(--claro-red); width:12px; height:55px;"></div>
+                                <span style="position: absolute; bottom: -18px; font-size: 9px; width: 40px; margin-left: -14px;">Feb</span>
+                            </div>
+                            <div style="display: flex; gap: 3px; align-items: flex-end; text-align: center; position: relative;">
+                                <div title="2025" style="background:#666666; width:12px; height:50px;"></div>
+                                <div title="2026" style="background:var(--claro-red); width:12px; height:30px;"></div>
+                                <span style="position: absolute; bottom: -18px; font-size: 9px; width: 40px; margin-left: -14px;">Mar</span>
+                            </div>
+                            <div style="display: flex; gap: 3px; align-items: flex-end; text-align: center; position: relative;">
+                                <div title="2025" style="background:#666666; width:12px; height:85px;"></div>
+                                <div title="2026" style="background:var(--claro-red); width:12px; height:60px;"></div>
+                                <span style="position: absolute; bottom: -18px; font-size: 9px; width: 40px; margin-left: -14px;">Abr</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h4>Hurtos por Mes Global (Acumulado)</h4>
+                        <div style="font-size: 12px; color: #666; height: 160px; display: flex; align-items: flex-end; justify-content: space-around; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                            <div style="text-align: center;"><div style="background:#666666; width:10px; height:50px;"></div><span style="font-size:9px;">Ene</span></div>
+                            <div style="text-align: center;"><div style="background:#666666; width:10px; height:65px;"></div><span style="font-size:9px;">Feb</span></div>
+                            <div style="text-align: center;"><div style="background:#666666; width:10px; height:45px;"></div><span style="font-size:9px;">Mar</span></div>
+                            <div style="text-align: center;"><div style="background:#666666; width:10px; height:80px;"></div><span style="font-size:9px;">Abr</span></div>
+                            <div style="text-align: center;"><div style="background:#666666; width:10px; height:70px;"></div><span style="font-size:9px;">May</span></div>
+                            <div style="text-align: center;"><div style="background:#666666; width:10px; height:90px;"></div><span style="font-size:9px;">Jun</span></div>
+                            <div style="text-align: center;"><div style="background:#666666; width:10px; height:55px;"></div><span style="font-size:9px;">Jul</span></div>
+                            <div style="text-align: center;"><div style="background:#666666; width:10px; height:60px;"></div><span style="font-size:9px;">Ago</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fila 2 de Gráficos Analíticos (Geografía, Zonificación y Tipologías) -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
+                    <div class="chart-card">
+                        <h4>Hurtos por Ciudad Principal</h4>
+                        <div class="bar-chart-mock">
+                            <div class="bar-item">
+                                <div class="bar-label-info"><span>Bogotá D.C.</span><span>130</span></div>
+                                <div class="bar-track"><div class="bar-fill" style="width: 100%;"></div></div>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar-label-info"><span>Valledupar</span><span>103</span></div>
+                                <div class="bar-track"><div class="bar-fill" style="width: 79%;"></div></div>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar-label-info"><span>Cartagena D.C.</span><span>65</span></div>
+                                <div class="bar-track"><div class="bar-fill" style="width: 50%;"></div></div>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar-label-info"><span>Santa Marta</span><span>56</span></div>
+                                <div class="bar-track"><div class="bar-fill" style="width: 43%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h4>Hurtos por Ubicación (Zona)</h4>
+                        <div style="display: flex; align-items: center; justify-content: space-around; height: 160px;">
+                            <div style="width: 85px; height: 85px; border-radius: 50%; border: 10px solid var(--claro-red); border-left-color: #666; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold;">
+                                78.18%
+                            </div>
+                            <div style="font-size: 12px; display: flex; flex-direction: column; gap: 6px;">
+                                <div><span style="color: var(--claro-red); font-weight: bold;">■</span> Rural (3 mil / 78.18%)</div>
+                                <div><span style="color: #666; font-weight: bold;">■</span> Urbano (1 mil / 21.52%)</div>
+                                <div><span style="color: #ccc; font-weight: bold;">■</span> Semi-Rural / Blanco</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h4>Distribución por Tipo de Elemento</h4>
+                        <div class="bar-chart-mock">
+                            <div class="bar-item">
+                                <div class="bar-label-info"><span>Baterías Plomo</span><span>16.458</span></div>
+                                <div class="bar-track"><div class="bar-fill" style="width: 90%; background: #666666;"></div></div>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar-label-info"><span>Baterías Litio</span><span>4.502</span></div>
+                                <div class="bar-track"><div class="bar-fill" style="width: 35%; background: var(--claro-red);"></div></div>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar-label-info"><span>Partes PE</span><span>1.275</span></div>
+                                <div class="bar-track"><div class="bar-fill" style="width: 15%; background: #666666;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fila 3 Reemplazada: Top Sitios Críticos y Estado Legal / Reclamación -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                    <div class="chart-card">
+                        <h4>Top 5 Estaciones / Sitios con Mayor Reincidencia de Vandalismo</h4>
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; margin-top: 10px;">
+                            <div style="display: flex; justify-content: space-between; padding: 6px 10px; background: #fafafa; border-radius: 4px; border-left: 4px solid var(--claro-red);">
+                                <span><b>ST-BOG-0412</b> (Suba Rural)</span>
+                                <span style="color: var(--claro-red); font-weight: bold;">42 Incidentes ($ 1.2M)</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 6px 10px; background: #fafafa; border-radius: 4px; border-left: 4px solid #666666;">
+                                <span><b>ST-VUP-0105</b> (Valledupar Norte)</span>
+                                <span style="color: #666666; font-weight: bold;">38 Incidentes ($ 980K)</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 6px 10px; background: #fafafa; border-radius: 4px; border-left: 4px solid #666666;">
+                                <span><b>ST-CTG-0221</b> (Cartagena Vía al Mar)</span>
+                                <span style="color: #666666; font-weight: bold;">31 Incidentes ($ 850K)</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 6px 10px; background: #fafafa; border-radius: 4px; border-left: 4px solid #666666;">
+                                <span><b>ST-SMT-0089</b> (Santa Marta Troncal)</span>
+                                <span style="color: #666666; font-weight: bold;">27 Incidentes ($ 740K)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h4>Estatus Legal / Denuncias</h4>
+                        <div class="bar-chart-mock" style="margin-top: 10px;">
+                            <div class="bar-item">
+                                <div class="bar-label-info"><span>Fiscalía Activa</span><span>65%</span></div>
+                                <div class="bar-track"><div class="bar-fill" style="width: 65%; background: var(--claro-red);"></div></div>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar-label-info"><span>Póliza En Trámite</span><span>25%</span></div>
+                                <div class="bar-track"><div class="bar-fill" style="width: 25%; background: #666666;"></div></div>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar-label-info"><span>Cerrado / Siniestro</span><span>10%</span></div>
+                                <div class="bar-track"><div class="bar-fill" style="width: 10%; background: #ccc;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+<!-- VISTA 2: FORMULARIO DE DENUNCIO (OFS / BSCloud) -->
+<div id="vista-formulario" class="hidden">
+    <button class="btn-volver" onclick="cambiarVista('tabla')">⬅ Salir / Volver a la lista (OFS)</button>
+    
+    <div class="breadcrumb">Denuncios > Estación Base > Crear</div>
+
+    <!-- Bloque 1: Información del Analista -->
+    <div class="form-section-card">
+        <h3>Información del Analista</h3>
+        <div class="form-grid-3">
+            <div class="form-group">
+                <label>Nombre Responsable Reg.</label>
+                <input type="text" value="JEMA" readonly style="background: #eee;">
+            </div>
+            <div class="form-group">
+                <label>Correo Responsable Reg. (Destino PDF) *</label>
+                <input type="text" id="correo-analista" placeholder="correo@claro.com.co">
+            </div>
+            <div class="form-group">
+                <label>Celular Responsable Reg.</label>
+                <input type="text" placeholder="3000000000">
+            </div>
+        </div>
+    </div>
+
+    <!-- Bloque 2: Información del Técnico -->
+    <div class="form-section-card">
+        <h3>Información del Técnico</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" placeholder="Nombre">
+            </div>
+            <div class="form-group">
+                <label>Numero de teléfono</label>
+                <input type="text" placeholder="Numero de teléfono">
+            </div>
+            <div class="form-group">
+                <label>Correo electrónico</label>
+                <input type="text" placeholder="Correo electrónico">
+            </div>
+            <div class="form-group">
+                <label>Tipo de empresa</label>
+                <select id="tipo-empresa-tecnico" onchange="actualizarNitEmpresa()">
+                    <option value="">Seleccione tipo...</option>
+                    <option value="aliado">Aliado</option>
+                    <option value="directo">Directo</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>NIT de la empresa</label>
+                <input type="text" id="nit-empresa-tecnico" placeholder="NIT de la empresa">
+            </div>
+        </div>
+    </div>
+
+    <!-- Bloque 3: Información General Denuncio -->
+    <div class="form-section-card">
+        <h3>Información General Denuncio</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>DEB Consecutivo *</label>
+                <input type="text" id="input-deb" placeholder="DEB Consecutivo">
+            </div>
+            <div class="form-group">
+                <label>Número de Orden de Trabajo (OT) *</label>
+                <input type="text" id="input-ot" placeholder="Ej. OT-98765432" style="background: #fffdf0; border-color: #d4af37;">
+            </div>
+            <div class="form-group">
+                <label>Fecha de hallazgo *</label>
+                <input type="date" id="input-fecha">
+            </div>
+            
+            <!-- Departamento -->
+            <div class="form-group">
+                <label>Departamento *</label>
+                <select id="select-departamento" onchange="cargarMunicipios()">
+                    <option value="">Seleccione departamento...</option>
+                    <option value="Amazonas">Amazonas</option>
+                    <option value="Antioquia">Antioquia</option>
+                    <option value="Arauca">Arauca</option>
+                    <option value="Atlántico">Atlántico</option>
+                    <option value="Bolívar">Bolívar</option>
+                    <option value="Boyacá">Boyacá</option>
+                    <option value="Caldas">Caldas</option>
+                    <option value="Caquetá">Caquetá</option>
+                    <option value="Casanare">Casanare</option>
+                    <option value="Cauca">Cauca</option>
+                    <option value="Cesar">Cesar</option>
+                    <option value="Chocó">Chocó</option>
+                    <option value="Córdoba">Córdoba</option>
+                    <option value="Cundinamarca">Cundinamarca</option>
+                    <option value="Guainía">Guainía</option>
+                    <option value="Guaviare">Guaviare</option>
+                    <option value="Huila">Huila</option>
+                    <option value="La Guajira">La Guajira</option>
+                    <option value="Magdalena">Magdalena</option>
+                    <option value="Meta">Meta</option>
+                    <option value="Nariño">Nariño</option>
+                    <option value="Norte de Santander">Norte de Santander</option>
+                    <option value="Putumayo">Putumayo</option>
+                    <option value="Quindío">Quindío</option>
+                    <option value="Risaralda">Risaralda</option>
+                    <option value="San Andrés y Providencia">San Andrés y Providencia</option>
+                    <option value="Santander">Santander</option>
+                    <option value="Sucre">Sucre</option>
+                    <option value="Tolima">Tolima</option>
+                    <option value="Valle del Cauca">Valle del Cauca</option>
+                    <option value="Vaupés">Vaupés</option>
+                    <option value="Vichada">Vichada</option>
+                </select>
+            </div>
+
+            <!-- Ciudad manual -->
+            <div class="form-group">
+                <label>Ciudad *</label>
+                <input type="text" id="input-ciudad" placeholder="Ciudad (Ingrese a mano)">
+            </div>
+
+            <div class="form-group">
+                <label>Regional</label>
+                <select>
+                    <option value="">Seleccione regional...</option>
+                    <option value="R1-Costa">R1-Costa</option>
+                    <option value="R2-Noroccidente">R2-Noroccidente</option>
+                    <option value="R3-Suroccidente">R3-Suroccidente</option>
+                    <option value="R4-Centro">R4-Centro</option>
+                    <option value="R5-Nororiente">R5-Nororiente</option>
+                </select>
+            </div>
+
+            <!-- Municipio dependiente -->
+            <div class="form-group">
+                <label>Municipio *</label>
+                <select id="select-municipio" disabled>
+                    <option value="">Seleccione primero un departamento...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Vereda o Barrio</label>
+                <input type="text" placeholder="Vereda o Barrio">
+            </div>
+
+            <div class="form-group">
+                <label>Dirección del sitio</label>
+                <input type="text" placeholder="Dirección del sitio">
+            </div>
+            <div class="form-group">
+                <label>Latitud (lugar evento)</label>
+                <input type="text" placeholder="Latitud (lugar evento)">
+            </div>
+            <div class="form-group">
+                <label>Longitud (lugar evento)</label>
+                <input type="text" placeholder="Longitud (lugar evento)">
+            </div>
+            <div class="form-group">
+                <label>Latitud (OT)</label>
+                <input type="text" placeholder="Latitud (OT)">
+            </div>
+
+            <div class="form-group">
+                <label>Longitud (OT)</label>
+                <input type="text" placeholder="Longitud (OT)">
+            </div>
+            <div class="form-group">
+                <label>Número de Atención OT/Incidente</label>
+                <input type="text" placeholder="Número de Atención OT/Incidente">
+            </div>
+            <div class="form-group">
+                <label>Nombre Estación Base</label>
+                <input type="text" placeholder="Nombre Estación Base">
+            </div>
+            <div class="form-group">
+                <label>Tipología du sitio</label>
+                <select>
+                    <option value="">Seleccione tipología...</option>
+                    <option value="indoor">Indoor</option>
+                    <option value="outdoor">Outdoor</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Energización</label>
+                <select>
+                    <option value="">Seleccione energización...</option>
+                    <option value="planta">Planta eléctrica</option>
+                    <option value="red">Red pública</option>
+                    <option value="ppe">PPE</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="tipo-zona" style="display: block; font-size: 12px; font-weight: bold; color: #666; text-transform: uppercase; margin-bottom: 5px;">Tipo de Zona *</label>
+                <select id="tipo-zona" name="tipo_zona" required style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; background: #fff;">
+                    <option value="" disabled selected>Seleccione el tipo de zona</option>
+                    <option value="Urbano">Urbano</option>
+                    <option value="Rural">Rural</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Tipo de seguridad</label>
+                <select>
+                    <option value="">Seleccione seguridad...</option>
+                    <option value="sse">SSE</option>
+                    <option value="cctv">CCTV</option>
+                    <option value="tintas">Tintas</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nombre o actividad de la zona</label>
+                <input type="text" placeholder="Nombre o actividad de la zona">
+            </div>
+            <div class="form-group">
+                <label>Infraestructura vandalizada</label>
+                <select>
+                    <option value="">Seleccione infraestructura...</option>
+                    <option value="malla">Malla</option>
+                    <option value="muro">Muro</option>
+                    <option value="porton">Portón</option>
+                    <option value="jaula">Jaula</option>
+                    <option value="consentrica">Concéntrica</option>
+                    <option value="aseguramientos">Aseguramientos</option>
+                </select>
+            </div>
+
+            <div class="form-group form-grid-full">
+                <label>Elementos hurtados (General)</label>
+                <select id="select-elemento" onchange="toggleSeccionesElemento()">
+                    <option value="">Seleccione elemento...</option>
+                    <option value="aire">Aire Acondicionado</option>
+                    <option value="cableado">Cableado de Cobre / Fibras</option>
+                    <option value="planta_completa">Planta Eléctrica Completa (<span id="lbl-planta_completa">$ 61.880.000</span> c/u)</option>
+                    <option value="otro">Otro elemento</option>
+                </select>
+            </div>
+
+            <!-- CAMPO DINÁMICO: Cantidad de Planta Completa -->
+            <div class="form-group form-grid-full hidden" id="seccion-cant-planta-completa">
+                <label>Cantidad de Plantas Eléctricas Completas Hurtadas</label>
+                <div class="sub-box">
+                    <div class="form-grid-3" style="grid-template-columns: repeat(2, 1fr);">
+                        <div class="form-group">
+                            <label>Cantidad</label>
+                            <input type="number" id="cant-planta-completa" min="1" value="1" oninput="calcularTotalHurto()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CAMPO INDEPENDIENTE: ¿Existió robo de baterías? -->
+            <div class="form-group form-grid-full">
+                <label>¿Existió robo de baterías?</label>
+                <select id="select-robo-baterias" onchange="toggleSeccionBaterias()">
+                    <option value="no">No</option>
+                    <option value="si">Sí</option>
+                </select>
+            </div>
+
+            <div class="form-group form-grid-full hidden" id="seccion-tipo-baterias">
+                <label>Detalle de Baterías Afectadas (Valores parametrizados)</label>
+                <div class="sub-box">
+                    <div class="form-grid-3" style="grid-template-columns: repeat(2, 1fr);">
+                        <div class="form-group">
+                            <label>Tipo de Batería</label>
+                            <select id="tipo-bateria-afectada" onchange="toggleCantidadBaterias()">
+                                <option value="">Seleccione...</option>
+                                <option value="litio">Litio (<span id="lbl-litio">$ 112.259.000</span> c/u)</option>
+                                <option value="plomo">Plomo (<span id="lbl-plomo">$ 25.704.000</span> c/u)</option>
+                                <option value="ambas">Ambas (Litio + Plomo)</option>
+                            </select>
+                        </div>
+                        <div class="form-group hidden" id="grupo-cant-litio">
+                            <label>Cantidad Baterías de Litio</label>
+                            <input type="number" id="cant-litio" min="1" value="1" oninput="calcularTotalHurto()">
+                        </div>
+                        <div class="form-group hidden" id="grupo-cant-plomo">
+                            <label>Cantidad Baterías de Plomo</label>
+                            <input type="number" id="cant-plomo" min="1" value="1" oninput="calcularTotalHurto()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CAMPO INDEPENDIENTE: ¿Existió robo de partes de planta? -->
+            <div class="form-group form-grid-full">
+                <label>¿Existió robo de partes de planta?</label>
+                <select id="select-robo-partes" onchange="toggleSeccionPartesPlanta()">
+                    <option value="no">No</option>
+                    <option value="si">Sí</option>
+                </select>
+            </div>
+
+            <div class="form-group form-grid-full hidden" id="seccion-partes-planta">
+                <label>Seleccione las Partes de la Planta Eléctrica afectadas (Valores parametrizados):</label>
+                <div class="sub-box">
+                    <div class="form-grid">
+                        <div class="form-group"><label><input type="checkbox" class="chk-parte" id="p_avr" value="1837750" onchange="calcularTotalHurto()"> AVR (<span class="lbl-precio">$ 1.837.750</span>)</label></div>
+                        <div class="form-group"><label><input type="checkbox" class="chk-parte" id="p_tablero" value="1875000" onchange="calcularTotalHurto()"> Accesorios tablero (<span class="lbl-precio">$ 1.875.000</span>)</label></div>
+                        <div class="form-group"><label><input type="checkbox" class="chk-parte" id="p_alternador" value="1400000" onchange="calcularTotalHurto()"> Alternador (<span class="lbl-precio">$ 1.400.000</span>)</label></div>
+                        <div class="form-group"><label><input type="checkbox" class="chk-parte" id="p_bloque" value="5000000" onchange="calcularTotalHurto()"> Bloque (<span class="lbl-precio">$ 5.000.000</span>)</label></div>
+                        <div class="form-group"><label><input type="checkbox" class="chk-parte" id="p_culata" value="5250000" onchange="calcularTotalHurto()"> Culata (<span class="lbl-precio">$ 5.250.000</span>)</label></div>
+                        <div class="form-group"><label><input type="checkbox" class="chk-parte" id="p_generador" value="12812500" onchange="calcularTotalHurto()"> Generador (<span class="lbl-precio">$ 12.812.500</span>)</label></div>
+                        <div class="form-group"><label><input type="checkbox" class="chk-parte" id="p_tarjeta" value="3325000" onchange="calcularTotalHurto()"> Tarjeta de Control (<span class="lbl-precio">$ 3.325.000</span>)</label></div>
+                        <div class="form-group"><label><input type="checkbox" class="chk-parte" id="p_turbos" value="9375000" onchange="calcularTotalHurto()"> Turbos (<span class="lbl-precio">$ 9.375.000</span>)</label></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub-sección para Cableado -->
+            <div class="form-group form-grid-full hidden" id="seccion-cableado">
+                <label>Detalle del Cableado Afectado</label>
+                <div class="sub-box">
+                    <div class="form-grid-3" style="grid-template-columns: repeat(2, 1fr);">
+                        <div class="form-group">
+                            <label>Clase de cable</label>
+                            <select id="clase-cable">
+                                <option value="">Seleccione clase...</option>
+                                <option value="aluminio">Aluminio</option>
+                                <option value="cobre">Cobre</option>
+                                <option value="fibra">Fibra</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Cantidad de metros hurtados</label>
+                            <input type="number" id="metros-cable" min="0" placeholder="Ej. 50 metros">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group form-grid-full hidden" id="seccion-cuadro-hurtados">
+                <label>Cuadro de Elementos Hurtados</label>
+                <textarea id="input-cuadro-hurtados" placeholder="Relacione aquí los elementos de la planta hurtados..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Valor aprox hurtos</label>
+                <input type="text" id="valor-hurto" value="$ 0" readonly style="background: #eee; font-weight: bold; color: var(--claro-red);">
+            </div>
+
+            <div class="form-group">
+                <label>Valor aprox daños físicos</label>
+                <input type="text" id="valor-danios" value="$ 0" oninput="formatearMonedaInput(this)">
+            </div>
+
+            <div class="form-group">
+                <label>Modalidad de ingreso / Modus Operandi</label>
+                <select>
+                    <option value="">Seleccione modalidad...</option>
+                    <option value="escalamiento">Escalamiento</option>
+                    <option value="forzamiento">Forzamiento de cerradura / candado</option>
+                    <option value="rompimiento">Rompimiento de muro / pared</option>
+                    <option value="ventosa">Ventosa</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Tipo de vandalismo</label>
+                <select>
+                    <option value="">Seleccione tipo...</option>
+                    <option value="corte">Corte de cables / conexiones</option>
+                    <option value="destruccion">Destrucción de gabinetes</option>
+                    <option value="grafiti">Pintura / Grafiti</option>
+                    <option value="saqueo">Saqueo total de componentes</option>
+                </select>
+            </div>
+
+            <div class="form-group form-grid-full">
+                <label>Narración de los hechos (Recolección de información del suceso)</label>
+                <textarea placeholder="Describa detalladamente cómo se recolectó la información..."></textarea>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bloque 4: Anexos y Evidencia -->
+    <div class="form-section-card">
+        <h3>Anexos y Evidencia</h3>
+        <div class="grid-fotos">
+            <div class="foto-card-visual">
+                <div class="foto-info">📎 Foto #1 del sitio</div>
+                <button class="btn-ver-foto" onclick="alert('Visualizando Foto #1')">👁</button>
+            </div>
+            <div class="foto-card-visual">
+                <div class="foto-info">📎 Foto #2 del sitio</div>
+                <button class="btn-ver-foto" onclick="alert('Visualizando Foto #2')">👁</button>
+            </div>
+            <div class="foto-card-visual">
+                <div class="foto-info">📎 Foto #3 del sitio</div>
+                <button class="btn-ver-foto" onclick="alert('Visualizando Foto #3')">👁</button>
+            </div>
+            <div class="foto-card-visual">
+                <div class="foto-info">📎 Foto #4 del sitio</div>
+                <button class="btn-ver-foto" onclick="alert('Visualizando Foto #4')">👁</button>
+            </div>
+            <div class="foto-card-visual">
+                <div class="foto-info">📎 Foto #5 del sitio</div>
+                <button class="btn-ver-foto" onclick="alert('Visualizando Foto #5')">👁</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button class="btn-secondary" onclick="cambiarVista('tabla')">Cancelar</button>
+        <div class="actions-right">
+            <button class="btn-secondary" onclick="limpiarFormulario()" style="background: #ffc107; color: #222;">🔄 Refrescar / Nuevo Envío</button>
+            <button class="btn-claro" onclick="guardarYEnviarPDF()">Guardar y Enviar PDF</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- SCRIPT DE APOYO PARA ASEGURAR QUE SE DESBLOQUEE -->
+<script>
+// ==========================================
+// CATÁLOGO DE DEPARTAMENTOS Y MUNICIPIOS
+// ==========================================
+const municipiosPorDepartamento = {
+    "Amazonas": ["Leticia", "El Encanto", "La Chorrera", "La Pedrera", "La Victoria", "Mirití-Paraná", "Puerto Alegría", "Puerto Arica", "Puerto Nariño", "Puerto Santander", "Tarapacá"],
+    "Antioquia": ["Medellín", "Abejorral", "Abriaquí", "Alejandría", "Amagá", "Amalfi", "Andes", "Angelópolis", "Angostura", "Anorí", "Anza", "Apartadó", "Arboletes", "Argelia", "Armenia", "Barbosa", "Bello", "Belmira", "Betania", "Betulia", "Briceño", "Buriticá", "Cáceres", "Caicedo", "Caldas", "Campamento", "Cañasgordas", "Caracolí", "Caramanta", "Carepa", "Carolina del Príncipe", "Caucasia", "Chigorodó", "Cisneros", "Cocorná", "Concepción", "Concordia", "Copacabana", "Dabeiba", "Donmatías", "Ebéjico", "El Bagre", "El Carmen de Viboral", "El Peñol", "El Retiro", "El Santuario", "Entrerríos", "Envigado", "Fredonia", "Frontino", "Giraldo", "Girardota", "Gómez Plata", "Granada", "Guadalupe", "Guarne", "Guatapé", "Heliconia", "Hispania", "Itagüí", "Ituango", "Jardín", "Jericó", "La Ceja", "La Estrella", "La Pintada", "La Unión", "Liborina", "Maceo", "Marinilla", "Montebello", "Nariño", "Nechí", "Necoclí", "Olaya", "Peque", "Pueblorrico", "Puerto Berrío", "Puerto Nare", "Puerto Triunfo", "Remedios", "Rionegro", "Sabanalarga", "Sabaneta", "Salgar", "San Andrés de Cuerquia", "San Carlos", "San Francisco", "San Jerónimo", "San José de la Montaña", "San Juan de Urabá", "San Luis", "San Pedro de los Milagros", "San Pedro de Urabá", "San Rafael", "San Roque", "San Vicente", "Santa Bárbara", "Santa Fe de Antioquia", "Santa Rosa de Osos", "Santo Domingo", "Segovia", "Sonsón", "Sopetrán", "Tmesis", "Tarazá", "Tarso", "Titiribí", "Toledo", "Turbo", "Uramita", "Urrao", "Valdivia", "Valparaíso", "Vegachí", "Venecia", "Vigía del Fuerte", "Yalí", "Yarumal", "Yolombó", "Yondó", "Zaragoza"],
+    "Arauca": ["Arauca", "Arauquita", "Cravo Norte", "Fortul", "Puerto Rondón", "Tame", "Saravena"],
+    "Atlántico": ["Barranquilla", "Baranoa", "Campo de la Cruz", "Candelaria", "Galapa", "Juan de Acosta", "Luruaco", "Malambo", "Manatí", "Palmar de Varela", "Piojó", "Polonuevo", "Ponedera", "Puerto Colombia", "Repelón", "Sabanagrande", "Sabanalarga", "Santa Lucía", "Santo Tomás", "Soledad", "Suan", "Tubará", "Usiacurí"],
+    "Bolívar": ["Cartagena de Indias", "Achí", "Altos del Rosario", "Arenal", "Arjona", "Arroyohondo", "Barranco de Loba", "Brazuelo de Papayal", "Calamar", "Cantagallo", "Cicuco", "Clemencia", "Córdoba", "El Carmen de Bolívar", "El Guamo", "El Peñón", "Hatillo de Loba", "Magangué", "Mahates", "Margarita", "María La Baja", "Montecristo", "Morales", "Norosí", "Pinillos", "Regidor", "Río Viejo", "San Cristóbal", "San Estanislao", "San Fernando", "San Jacinto", "San Jacinto del Cauca", "San Juan Nepomuceno", "San Martín de Loba", "San Pablo", "Santa Catalina", "Santa Rosa", "Santa Rosa del Sur", "Simití", "Soplaviento", "Talaigua Nuevo", "Tiquisio", "Turbaco", "Turbaná", "Villanueva", "Zambrano"],
+    "Boyacá": ["Tunja", "Almeida", "Aquitania", "Arcabuco", "Belén", "Berbeo", "Betéitiva", "Boavita", "Boyacá", "Briceño", "Buenavista", "Bustamante", "Caldas", "Campohermoso", "Cerinza", "Chinavita", "Chiquinquirá", "Chiscas", "Chita", "Chitaraque", "Chivatá", "Ciénega", "Cómbita", "Coper", "Corrales", "Covarachía", "Cus_data", "Duitama", "El Cocuy", "El Espino", "Firavitoba", "Floresta", "Gachantivá", "Gámeza", "Garagoa", "Guacamayas", "Guateque", "Guayatá", "Güicán de la Sierra", "Iza", "Jenesano", "Jericó", "La Capira", "La Uvita", "La Victoria", "Labranzagrande", "Macanal", "Maripí", "Miraflores", "Mongua", "Monguí", "Moniquirá", "Motavita", "Muzo", "Nobsa", "Nuevo Colón", "Oicatá", "Otanche", "Pachavita", "Páez", "Paipa", "Pajarito", "Panqueba", "Pauna", "Paya", "Paz de Río", "Pesca", "Pisba", "Puerto Boyacá", "Quípama", "Ramiriquí", "Ráquira", "Rondón", "Saboyá", "Sáchica", "Samacá", "San Eduardo", "San José de Pare", "San Luis de Gaceno", "San Mateo", "San Miguel de Sema", "San Pablo de Borbur", "Santa María", "Santa Rosa de Viterbo", "Santa Sofía", "Santana", "Sativanorte", "Sativasur", "Siachoque", "Soatá", "Socha", "Socotá", "Sogamoso", "Somondoco", "Sora", "Soracá", "Sotaquirá", "Susacón", "Sutamarchán", "Sutatenza", "Tasco", "Tenza", "Tibaná", "Tibasosa", "Tinjacá", "Tipacoque", "Toca", "Togüí", "Tópaga", "Tota", "Tununguá", "Turmequé", "Tuta", "Tutasá", "Ventaquemada", "Villa de Leyva", "Viracachá", "Zetaquira"],
+    "Caldas": ["Manizales", "Aguadas", "Anserma", "Aranzazu", "Belalcázar", "Chinchiná", "Filadelfia", "La Dorada", "La Merced", "Manzanares", "Marmato", "Marquetalia", "Marulanda", "Neira", "Pácora", "Palestina", "Pensilvania", "Riosucio", "Risaralda", "Salamina", "Samaná", "San José", "Supía", "Victoria", "Villamaría", "Viterbo"],
+    "Caquetá": ["Florencia", "Albania", "Belén de los Andaquíes", "Cartagena del Chairá", "Curillo", "El Doncello", "El Paujil", "La Montañita", "Morelia", "Puerto Rico", "San José del Fragua", "San Vicente del Caguán", "Solano", "Solita", "Valparaíso"],
+    "Casanare": ["Yopal", "Aguazul", "Chameza", "Hato Corozal", "La Salina", "Maní", "Monterrey", "Nunchía", "Orocué", "Paz de Ariporo", "Pore", "Recetor", "Sabanalarga", "Sácama", "San Luis de Palenque", "Tauramena", "Trinidad", "Villanueva"],
+    "Cauca": ["Popayán", "Almaguer", "Argelia", "Balboa", "Bolívar", "Buenos Aires", "Cajibío", "Caldono", "Caloto", "Corinto", "El Tambo", "Florencia", "Guachené", "Guapí", "Inzá", "Jambaló", "La Sierra", "La Vega", "López de Micay", "Mercaderes", "Miranda", "Morales", "Padilla", "Páez", "Patía", "Piamonte", "Piendamó", "Puerto Tejada", "Puracé", "Rosas", "San Sebastián", "Santa Rosa", "Santander de Quilichao", "Silvia", "Sotará", "Suárez", "Sucre", "Timbío", "Timbiquí", "Toribío", "Totoró", "Villa Rica"],
+    "Cesar": ["Valledupar", "Aguachica", "Agustín Codazzi", "Astrea", "Becerril", "Bosconia", "Chimichagua", "Chiriguaná", "Curumaní", "El Copey", "El Paso", "Gamarra", "Gonzalez", "La Gloria", "La Jagua de Ibirico", "La Paz", "Manaure Balcón del Cesar", "Pailitas", "Pelaya", "Pueblo Bello", "Río de Oro", "San Alberto", "San Diego", "San Martín", "Tamalameque"],
+    "Chocó": ["Quibdó", "Acandí", "Alto Baudó", "Atrato", "Bagadó", "Bahía Solano", "Bajo Baudó", "Bojayá", "El Cantón de San Pablo", "El Carmen de Atrato", "El Litoral de San Juan", "Istmina", "Juradó", "Lloró", "Medio Atrato", "Medio Baudó", "Medio San Juan", "Nóvita", "Nuquí", "Río Iró", "Río Quito", "Riosucio", "San José del Palmar", "Sipí", "Tadó", "Unguía", "Unión Panamericana"],
+    "Córdoba": ["Montería", "Ayapel", "Buenavista", "Canalete", "Cereté", "Chimá", "Chinú", "Ciénaga de Oro", "Cotorra", "La Apartada", "Lorica", "Los Córdobas", "Momil", "Moñitos", "Planeta Rica", "Pueblo Nuevo", "Puerto Escondido", "Puerto Libertador", "Purísima", "Sahagún", "San Andrés de Sotavento", "San Antero", "San Bernardo del Viento", "San Carlos", "San José de Uré", "San Pelayo", "Tierralta", "Tuchín", "Valencia"],
+    "Cundinamarca": ["Bogotá, D.C.", "Agua de Dios", "Albán", "Anapoima", "Anolaima", "Apulo", "Arbeláez", "Beltrán", "Bituima", "Bojacá", "Cabrera", "Cachipay", "Cajicá", "Caparrapí", "Cáqueza", "Carmen de Carupa", "Chaguaní", "Chía", "Chipaque", "Cogua", "Cota", "Cucunubá", "El Colegio", "El Rosal", "Facatativá", "Fómeque", "Fosca", "Funza", "Fúquene", "Fusagasugá", "Gachalá", "Gachancipá", "Gachetá", "Gama", "Girardot", "Granada", "Guachetá", "Guaduas", "Guasca", "Guataquí", "Guatavita", "Guayabal de Síquima", "Guayabetal", "Gutiérrez", "Jerusalén", "Junín", "La Calera", "La Mesa", "La Palma", "La Peña", "La Vega", "Lenguazaque", "Machetá", "Madrid", "Manta", "Medina", "Mosquera", "Nariño", "Nemocón", "Nilo", "Nimaima", "Nocaima", "Pacho", "Paime", "Pandi", "Paratebueno", "Pasca", "Puerto Salgar", "Pulí", "Quebradanegra", "Quetame", "Quipile", "Ricaurte", "San Antonio del Tequendama", "San Bernardo", "San Cayetano", "San Francisco", "San Juan de Rioseco", "Sasaima", "Sesquilé", "Sibaté", "Silvania", "Simijaca", "Soacha", "Sopó", "Subachoque", "Suesca", "Supatá", "Susa", "Sutatausa", "Tabio", "Tausa", "Tena", "Tenjo", "Tibacuy", "Tibirita", "Tocaima", "Tocancipá", "Topaipí", "Ubalá", "Ubaque", "Ubaté", "Une", "Útica", "Venecia", "Vergara", "Vianí", "Villagómez", "Villapinzón", "Villeta", "Viotá", "Yacopí", "Zipacón", "Zipaquirá"],
+    "Guainía": ["Inírida", "Barranco Minas", "Mapiripana", "San Felipe", "Puerto Colombia", "La Guadalupe", "Cacahual", "Pana Pana", "Morichal"],
+    "Guaviare": ["San José del Guaviare", "Calamar", "El Retorno", "Miraflores"],
+    "Huila": ["Neiva", "Acevedo", "Agrado", "Aipe", "Algeciras", "Altamira", "Baraya", "Campoalegre", "Colombia", "El Pital", "Elías", "Garzón", "Gigante", "Guadalupe", "Hobo", "Iquira", "Isnos", "La Argentina", "La Plata", "Nátaga", "Paicol", "Palermo", "Palestina", "Pitalito", "Rivera", "Saladoblanco", "San Agustín", "Santa María", "Tello", "Teruel", "Tesalia", "Timaná", "Villavieja", "Yaguará"],
+    "La Guajira": ["Riohacha", "Albania", "Barrancas", "Dibulla", "Distracción", "El Molino", "Fonseca", "Hatonuevo", "La Jagua del Pilar", "Maicao", "Manaure", "San Juan del Cesar", "Uribia", "Urumita", "Villanueva"],
+    "Magdalena": ["Santa Marta", "Algarrobo", "Aracataca", "Ariguaní", "Cerro de San Antonio", "Chibolo", "Ciénaga", "Concordia", "El Banco", "El Piñón", "El Retén", "Fundación", "Guamal", "Nueva Granada", "Pedraza", "Pijiño del Carmen", "Pivijay", "Plato", "Puebloviejo", "Remolino", "Sabanas de San Ángel", "Salamina", "San Sebastián de Buenavista", "San Zenón", "Santa Ana", "Santa Bárbara de Pinto", "Sitionuevo", "Tenerife", "Zapayán", "Zona Bananera"],
+    "Meta": ["Villavicencio", "Acacías", "Barranca de Upía", "Cabuyaro", "Castilla la Nueva", "Cubarral", "Cumaral", "El Calvario", "El Castillo", "El Dorado", "Fuente de Oro", "Granada", "Guamal", "La Macarena", "La Uribe", "Lejanías", "Mapiripán", "Mesetas", "Puerto Concordia", "Puerto Gaitán", "Puerto Lleras", "Puerto López", "Puerto Rico", "Restrepo", "San Carlos de Guaroa", "San Juan de Arama", "San Juanito", "San Martín", "Vistahermosa"],
+    "Nariño": ["Pasto", "Albán", "Aldana", "Ancuya", "Arboleda", "Barbacoas", "Belén", "Buesaco", "Chachagüí", "Colón", "Consacá", "Contadero", "Córdoba", "Cuaspud", "Cumbal", "Cumbitara", "El Charco", "El Peñol", "El Rosario", "El Tablón de Gómez", "El Tambo", "Funes", "Guachucal", "Guaitarilla", "Gualmatán", "Iles", "Imués", "Ipiales", "La Cruz", "La Florida", "La Llanada", "La Tola", "La Unión", "Leiva", "Linares", "Los Andes", "Magüí Payán", "Mallama", "Mosquera", "Nariño", "Olaya Herrera", "Ospina", "Francisco Pizarro", "Policarpa", "Potosí", "Providencia", "Puerres", "Pupiales", "Ricaurte", "Samaniego", "San Bernardo", "San José de Albán", "San Lorenzo", "San Pablo", "San Pedro de Cartago", "Sandoná", "Santa Bárbara", "Santacruz", "Sapuyes", "Taminango", "Tangua", "San Andrés de Tumaco", "Túquerres", "Yacuanquer"],
+    "Norte de Santander": ["Cúcuta", "Ábrego", "Arboledas", "Bochalema", "Bucasica", "Cácota", "Cáchira", "Chinácota", "Chitagá", "Convención", "Cucutilla", "Duranía", "El Carmen", "El Tarra", "El Zulia", "Gramalote", "Hacarí", "Herrán", "La Esperanza", "La Playa de Belén", "Labateca", "Los Patios", "Lourdes", "Mutiscua", "Ocaña", "Pamplona", "Pamplonita", "Puerto Santander", "Ragonvalia", "Salazar de Las Palmas", "San Calixto", "San Cayetano", "Santiago", "Sardinata", "Silos", "Teorama", "Tibú", "Toledo", "Villa Caro", "Villa del Rosario"],
+    "Putumayo": ["Mocoa", "Colón", "Orito", "Puerto Asís", "Puerto Caicedo", "Puerto Guzmán", "Puerto Leguízamo", "San Francisco", "San Miguel", "Santiago", "Sibundoy", "Valle del Guamuez", "Villagarzón"],
+    "Quindío": ["Armenia", "Buenavista", "Calarcá", "Circasia", "Córdoba", "Filandia", "Génova", "La Tebaida", "Montenegro", "Pijao", "Quimbaya", "Salento"],
+    "Risaralda": ["Pereira", "Apía", "Balboa", "Belen de Umbría", "Dosquebradas", "Guática", "La Celia", "La Virginia", "Marsella", "Mistrató", "Pueblo Rico", "Quinchía", "Santuario", "Santa Rosa de Cabal"],
+    "San Andrés y Providencia": ["San Andrés", "Providencia y Santa Catalina"],
+    "Santander": ["Bucaramanga", "Aguada", "Albania", "Aratoca", "Barbosa", "Barichara", "Barrancabermeja", "Betulia", "Bolívar", "Cabrera", "California", "Capitanejo", "Carcasí", "Cepitá", "Cerrito", "Charalá", "Charta", "Chima", "Chipatá", "Cimitarra", "Concepción", "Confines", "Contratación", "Coromoro", "El Carmen de Chucurí", "El Guacamayo", "El Peñón", "El Playón", "Encino", "Enciso", "Floridablanca", "Galán", "Gámbita", "Girón", "Guaca", "Guadalupe", "Guapotá", "Hato", "Jesús María", "Jordán", "La Belleza", "La Paz", "Landázuri", "Lebrija", "Los Santos", "Macaravita", "Malaga", "Matanza", "Mogotes", "Molagavita", "Ocamonte", "Oiba", "Onzaga", "Palmar", "Palmas del Socorro", "Páramo", "Piedecuesta", "Pinchote", "Puente Nacional", "Puerto Parra", "Puerto Wilches", "Rionegro", "Sabana de Torres", "San Andrés", "San Benito", "San Gil", "San Joaquín", "San José de Miranda", "San Miguel", "San Vicente de Chucurí", "Santa Bárbara", "Santa Helena del Opón", "Simacota", "Socorro", "Suaita", "Sucre", "Suratá", "Tona", "Valle de San José", "Vélez", "Vetas", "Villanueva", "Zapatoca"],
+    "Sucre": ["Sincelejo", "Buenavista", "Caimito", "Coloso", "Corozal", "Coveñas", "Chalan", "El Roble", "Galeras", "Guaranda", "La Unión", "Los Palmitos", "Majagual", "Morroa", "Ovejas", "Palmito", "Sampués", "San Benito Abad", "San Juan de Betulia", "San Marcos", "San Onofre", "San Pedro", "Sincé", "Sucre", "Tolú", "Tolú Viejo"],
+    "Tolima": ["Ibagué", "Alpujarra", "Alvarado", "Ambalema", "Anzoátegui", "Armero", "Ataco", "Cajamarca", "Carmen de Apicalá", "Casabianca", "Chaparral", "Coello", "Coyaima", "Dolores", "El Espinal", "Falan", "Flandes", "Fresno", "Guamo", "Herveo", "Honda", "Icononzo", "Lérida", "Líbano", "Mariquita", "Melgar", "Murillo", "Natagaima", "Ortega", "Palocabildo", "Piedras", "Planadas", "Prado", "Purificación", "Rioblanco", "Roncesvalles", "Rovira", "Saldaña", "San Antonio", "San Luis", "Santa Isabel", "Suárez", "Valle de San Juan", "Venadillo", "Villahermosa", "Villarrica"],
+    "Valle del Cauca": ["Cali", "Alcalá", "Andalucía", "Ansermanuevo", "Argelia", "Bolívar", "Buenaventura", "Buga", "Bugalagrande", "Caicedonia", "Calima", "Candelaria", "Cartago", "Dagua", "El Águila", "El Cairo", "El Cerrito", "El Dovio", "Florida", "Ginebra", "Guacarí", "Jamundí", "La Cumbre", "La Unión", "La Victoria", "Obando", "Palmira", "Pradera", "Restrepo", "Riofrío", "Roldanillo", "San Pedro", "Sevilla", "Toro", "Trujillo", "Tuluá", "Ulloa", "Versalles", "Yotoco", "Yumbo", "Zarzal"],
+    "Vaupés": ["Mitú", "Carurú", "Pacoa", "Taraira", "Yavaraté"],
+    "Vichada": ["Puerto Carreño", "La Primavera", "Cumaribo", "Santa Rosalía"]
+};
+
+// ==========================================
+// FUNCIÓN PARA CARGAR LOS MUNICIPIOS
+// ==========================================
+function cargarMunicipios() {
+    const selectDepto = document.getElementById("select-departamento");
+    const selectMuni = document.getElementById("select-municipio");
+    const deptoSeleccionado = selectDepto.value;
+
+    // Limpiamos las opciones previas del select de municipios
+    selectMuni.innerHTML = '<option value="">Seleccione municipio...</option>';
+
+    if (deptoSeleccionado === "") {
+        selectMuni.disabled = true;
+        selectMuni.innerHTML = '<option value="">Seleccione primero un departamento...</option>';
+    } else {
+        selectMuni.disabled = false; // Desbloquea el select de municipio
+        
+        if (municipiosPorDepartamento[deptoSeleccionado]) {
+            municipiosPorDepartamento[deptoSeleccionado].forEach(municipio => {
+                const option = document.createElement("option");
+                option.value = municipio;
+                option.textContent = municipio;
+                selectMuni.appendChild(option);
+            });
+        }
+    }
+}
+function cargarMunicipios() {
+    const selectDepto = document.getElementById("select-departamento");
+    const selectMuni = document.getElementById("select-municipio");
+    const deptoSeleccionado = selectDepto.value;
+
+    selectMuni.innerHTML = '<option value="">Seleccione municipio...</option>';
+
+    if (deptoSeleccionado === "") {
+        selectMuni.disabled = true;
+    } else {
+        selectMuni.disabled = false; // ¡Aquí se desbloquea correctamente!
+        
+        if (municipiosPorDepartamento && municipiosPorDepartamento[deptoSeleccionado]) {
+            municipiosPorDepartamento[deptoSeleccionado].forEach(municipio => {
+                const option = document.createElement("option");
+                option.value = municipio;
+                option.textContent = municipio;
+                selectMuni.appendChild(option);
+            });
+        }
+    }
+}
+</script>
+
+            <!-- VISTA 3: PANEL DE CONFIGURACIÓN DE COSTOS (Exclusivo Super Admin) -->
+            <div id="vista-admin-costos" class="hidden">
+                <button class="btn-volver" onclick="cambiarVista('tabla')">⬅ Volver al inicio</button>
+                <div class="breadcrumb">Administración > Parametrización de Costos de Equipos y Baterías</div>
+
+                <div class="form-section-card">
+                    <h3>Gestión de Costos Base (Baterías, Planta Completa y Partes)</h3>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 20px;">
+                        Como <strong>Super Administrador</strong>, aquí puede modificar los valores oficiales que alimentan el cálculo automático de hurtos. Los cambios persisten en el navegador.
+                    </p>
+
+                    <div class="admin-box">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Batería Litio ($)</label><input type="text" id="input-costo-litio" oninput="formatearMonedaInput(this)"></div>
+                            <div class="form-group"><label>Batería Plomo ($)</label><input type="text" id="input-costo-plomo" oninput="formatearMonedaInput(this)"></div>
+                            <div class="form-group"><label>Planta Completa ($)</label><input type="text" id="input-costo-planta_completa" oninput="formatearMonedaInput(this)"></div>
+                            <div class="form-group"><label>AVR ($)</label><input type="text" id="input-costo-p_avr" oninput="formatearMonedaInput(this)"></div>
+                            <div class="form-group"><label>Accesorios Tablero ($)</label><input type="text" id="input-costo-p_tablero" oninput="formatearMonedaInput(this)"></div>
+                            <div class="form-group"><label>Alternador ($)</label><input type="text" id="input-costo-p_alternador" oninput="formatearMonedaInput(this)"></div>
+                            <div class="form-group"><label>Bloque ($)</label><input type="text" id="input-costo-p_bloque" oninput="formatearMonedaInput(this)"></div>
+                            <div class="form-group"><label>Culata ($)</label><input type="text" id="input-costo-p_culata" oninput="formatearMonedaInput(this)"></div>
+                            <div class="form-group"><label>Generador ($)</label><input type="text" id="input-costo-p_generador" oninput="formatearMonedaInput(this)"></div>
+                            <div class="form-group"><label>Tarjeta de Control ($)</label><input type="text" id="input-costo-p_tarjeta" oninput="formatearMonedaInput(this)"></div>
+                            <div class="form-group"><label>Turbos ($)</label><input type="text" id="input-costo-p_turbos" oninput="formatearMonedaInput(this)"></div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                        <button class="btn-claro" onclick="guardarNuevosCostos()">💾 Guardar Cambios de Costos</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        let preciosEquiposDefault = {
+            litio: 112259000,
+            plomo: 25704000,
+            planta_completa: 61880000,
+            p_avr: 1837750,
+            p_tablero: 1875000,
+            p_alternador: 1400000,
+            p_bloque: 5000000,
+            p_culata: 5250000,
+            p_generador: 12812500,
+            p_tarjeta: 3325000,
+            p_turbos: 9375000
+        };
+
+        let preciosEquipos = {};
+        function cargarCostosGuardados() {
+            let guardados = localStorage.getItem('claro_precios_equipos');
+            if (guardados) {
+                preciosEquipos = JSON.parse(guardados);
+            } else {
+                preciosEquipos = {...preciosEquiposDefault};
+            }
+        }
+
+        window.onload = function() {
+            cargarCostosGuardados();
+            inicializarInputsAdmin();
+            actualizarEtiquetasPrecios();
+            
+            let rolGuardado = localStorage.getItem('claro_rol_activo') || 'analista';
+            document.getElementById('selector-rol').value = rolGuardado;
+            cambiarRol(rolGuardado, false);
+        };
+
+        function inicializarInputsAdmin() {}
+
+        function cambiarRol(rol, guardar = true) {
+            const menuAdmin = document.getElementById('menu-admin-item');
+            const badge = document.getElementById('badge-rol-usuario');
+
+            if(guardar) {
+                localStorage.setItem('claro_rol_activo', rol);
+            }
+
+            if(rol === 'superadmin') {
+                menuAdmin.classList.remove('hidden');
+                badge.innerText = "Super Admin (Control Total)";
+                badge.style.background = "#ffe6e5";
+                badge.style.color = "#DA291C";
+                poblarInputsAdmin();
+            } else {
+                menuAdmin.classList.add('hidden');
+                badge.innerText = "JEMA (Analista)";
+                cambiarVista('tabla');
+            }
+        }
+
+        function cambiarVista(vistaDestino) {
+            document.getElementById('vista-tabla').classList.add('hidden');
+            document.getElementById('vista-formulario').classList.add('hidden');
+            document.getElementById('vista-admin-costos').classList.add('hidden');
+            document.getElementById('vista-dashboard').classList.add('hidden');
+
+            document.getElementById('menu-tabla-item').classList.remove('active');
+            document.getElementById('menu-dashboard-item').classList.remove('active');
+
+            if (vistaDestino === 'tabla') {
+                document.getElementById('vista-tabla').classList.remove('hidden');
+                document.getElementById('menu-tabla-item').classList.add('active');
+            } else if (vistaDestino === 'formulario') {
+                document.getElementById('vista-formulario').classList.remove('hidden');
+            } else if (vistaDestino === 'admin-costos') {
+                document.getElementById('vista-admin-costos').classList.remove('hidden');
+                poblarInputsAdmin();
+            } else if (vistaDestino === 'dashboard') {
+                document.getElementById('vista-dashboard').classList.remove('hidden');
+                document.getElementById('menu-dashboard-item').classList.add('active');
+            }
+            window.scrollTo(0, 0);
+        }
+
+        function filtrarTecnologia(btn, tipo) {
+            document.querySelectorAll('.tab-tec').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function actualizarNitEmpresa() {
+            const tipoEmpresa = document.getElementById('tipo-empresa-tecnico').value;
+            const inputNit = document.getElementById('nit-empresa-tecnico');
+
+            if (tipoEmpresa === 'directo') {
+                inputNit.value = "800153993";
+                inputNit.readOnly = true;
+                inputNit.style.background = "#eee";
+            } else {
+                inputNit.value = "";
+                inputNit.readOnly = false;
+                inputNit.style.background = "#fafafa";
+            }
+        }
+
+        function toggleSeccionesElemento() {
+            const select = document.getElementById('select-elemento').value;
+            const seccionCantPlanta = document.getElementById('seccion-cant-planta-completa');
+            const seccionCable = document.getElementById('seccion-cableado');
+
+            seccionCantPlanta.classList.add('hidden');
+            seccionCable.classList.add('hidden');
+
+            if (select === 'planta_completa') {
+                seccionCantPlanta.classList.remove('hidden');
+            } else if (select === 'cableado') {
+                seccionCable.classList.remove('hidden');
+            }
+            verificarVisibilidadCuadroHurtados();
+            calcularTotalHurto();
+        }
+
+        function toggleSeccionBaterias() {
+            const selectorRobo = document.getElementById('select-robo-baterias').value;
+            const seccionTipoBaterias = document.getElementById('seccion-tipo-baterias');
+
+            if (selectorRobo === 'si') {
+                seccionTipoBaterias.classList.remove('hidden');
+            } else {
+                seccionTipoBaterias.classList.add('hidden');
+                document.getElementById('tipo-bateria-afectada').value = "";
+                toggleCantidadBaterias();
+            }
+            calcularTotalHurto();
+        }
+
+        function toggleCantidadBaterias() {
+            const tipoBateria = document.getElementById('tipo-bateria-afectada').value;
+            const grupoLitio = document.getElementById('grupo-cant-litio');
+            const grupoPlomo = document.getElementById('grupo-cant-plomo');
+
+            grupoLitio.classList.add('hidden');
+            grupoPlomo.classList.add('hidden');
+
+            if (tipoBateria === 'litio') {
+                grupoLitio.classList.remove('hidden');
+            } else if (tipoBateria === 'plomo') {
+                grupoPlomo.classList.remove('hidden');
+            } else if (tipoBateria === 'ambas') {
+                grupoLitio.classList.remove('hidden');
+                grupoPlomo.classList.remove('hidden');
+            }
+            calcularTotalHurto();
+        }
+
+        function toggleSeccionPartesPlanta() {
+            const selectorRoboPartes = document.getElementById('select-robo-partes').value;
+            const seccionPartesPlanta = document.getElementById('seccion-partes-planta');
+
+            if (selectorRoboPartes === 'si') {
+                seccionPartesPlanta.classList.remove('hidden');
+            } else {
+                seccionPartesPlanta.classList.add('hidden');
+                document.querySelectorAll('.chk-parte').forEach(chk => chk.checked = false);
+            }
+            verificarVisibilidadCuadroHurtados();
+            calcularTotalHurto();
+        }
+
+        function verificarVisibilidadCuadroHurtados() {
+            const elementoPrincipal = document.getElementById('select-elemento').value;
+            const selectorRoboPartes = document.getElementById('select-robo-partes').value;
+            const seccionCuadro = document.getElementById('seccion-cuadro-hurtados');
+
+            if (elementoPrincipal === 'planta_completa' || selectorRoboPartes === 'si') {
+                seccionCuadro.classList.remove('hidden');
+            } else {
+                seccionCuadro.classList.add('hidden');
+                document.getElementById('input-cuadro-hurtados').value = "";
+            }
+        }
+
+        function formatearPesos(valor) {
+            if (isNaN(valor)) valor = 0;
+            return "$ " + Math.round(valor).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function formatearMonedaInput(input) {
+            let valorLimpio = input.value.replace(/\D/g, "");
+            if (valorLimpio === "") {
+                input.value = "$ 0";
+                return;
+            }
+            let numero = parseInt(valorLimpio, 10);
+            input.value = formatearPesos(numero);
+        }
+
+        function extraerNumeroDeMoneda(textoMoneda) {
+            if (!textoMoneda) return 0;
+            let limpio = textoMoneda.toString().replace(/\D/g, "");
+            return parseInt(limpio, 10) || 0;
+        }
+
+        function calcularTotalHurto() {
+            let total = 0;
+
+            const elementoPrincipal = document.getElementById('select-elemento').value;
+            if (elementoPrincipal === 'planta_completa') {
+                let cantPlanta = parseInt(document.getElementById('cant-planta-completa').value) || 1;
+                total += preciosEquipos.planta_completa * cantPlanta;
+            }
+
+            const selectorRoboPartes = document.getElementById('select-robo-partes').value;
+            if (selectorRoboPartes === 'si') {
+                document.querySelectorAll('.chk-parte').forEach(chk => {
+                    if(chk.checked) {
+                        total += parseFloat(preciosEquipos[chk.id]) || 0;
+                    }
+                });
+            }
+
+            const selectorRobo = document.getElementById('select-robo-baterias').value;
+            if (selectorRobo === 'si') {
+                const tipoBateria = document.getElementById('tipo-bateria-afectada').value;
+                if (tipoBateria === 'litio') {
+                    let cant = parseInt(document.getElementById('cant-litio').value) || 0;
+                    total += preciosEquipos.litio * cant;
+                } else if (tipoBateria === 'plomo') {
+                    let cant = parseInt(document.getElementById('cant-plomo').value) || 0;
+                    total += preciosEquipos.plomo * cant;
+                } else if (tipoBateria === 'ambas') {
+                    let cantLitio = parseInt(document.getElementById('cant-litio').value) || 0;
+                    let cantPlomo = parseInt(document.getElementById('cant-plomo').value) || 0;
+                    total += (preciosEquipos.litio * cantLitio) + (preciosEquipos.plomo * cantPlomo);
+                }
+            }
+
+            document.getElementById('valor-hurto').value = formatearPesos(total);
+        }
+
+        function poblarInputsAdmin() {
+            for (let key in preciosEquipos) {
+                let inputElement = document.getElementById('input-costo-' + key);
+                if (inputElement) {
+                    inputElement.value = formatearPesos(preciosEquipos[key]);
+                }
+            }
+        }
+
+        function guardarNuevosCostos() {
+            for (let key in preciosEquipos) {
+                let inputElement = document.getElementById('input-costo-' + key);
+                if (inputElement) {
+                    preciosEquipos[key] = extraerNumeroDeMoneda(inputElement.value);
+                }
+            }
+
+            localStorage.setItem('claro_precios_equipos', JSON.stringify(preciosEquipos));
+
+            actualizarEtiquetasPrecios();
+            calcularTotalHurto();
+            alert("✅ ¡Costos actualizados, persistidos en el navegador y aplicados al sistema!");
+            cambiarVista('tabla');
+        }
+
+        function actualizarEtiquetasPrecios() {
+            if(document.getElementById('lbl-litio')) document.getElementById('lbl-litio').innerText = formatearPesos(preciosEquipos.litio);
+            if(document.getElementById('lbl-plomo')) document.getElementById('lbl-plomo').innerText = formatearPesos(preciosEquipos.plomo);
+            if(document.getElementById('lbl-planta_completa')) document.getElementById('lbl-planta_completa').innerText = formatearPesos(preciosEquipos.planta_completa);
+        }
+
+        function limpiarFormulario() {
+            if(confirm("¿Desea limpiar el formulario para refrescar y realizar un nuevo envío?")) {
+                document.querySelectorAll('#vista-formulario input:not([readonly]), #vista-formulario select, #vista-formulario textarea').forEach(el => {
+                    if(el.type === 'checkbox') el.checked = false;
+                    else el.value = '';
+                });
+                document.getElementById('select-robo-baterias').value = 'no';
+                document.getElementById('select-robo-partes').value = 'no';
+                document.getElementById('cant-litio').value = '1';
+                document.getElementById('cant-plomo').value = '1';
+                document.getElementById('cant-planta-completa').value = '1';
+                actualizarNitEmpresa();
+                toggleSeccionBaterias();
+                toggleSeccionPartesPlanta();
+                toggleSeccionesElemento();
+                verificarVisibilidadCuadroHurtados();
+                document.getElementById('valor-hurto').value = "$ 0";
+                document.getElementById('valor-danios').value = "$ 0";
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function guardarYEnviarPDF() {
+            const correo = document.getElementById('correo-analista').value.trim();
+            const deb = document.getElementById('input-deb').value.trim();
+            const ot = document.getElementById('input-ot').value.trim();
+            const fecha = document.getElementById('input-fecha').value.trim();
+            const ciudad = document.getElementById('input-ciudad').value.trim();
+            const valorHurtoTexto = document.getElementById('valor-hurto').value;
+            const valorHurtoNum = extraerNumeroDeMoneda(valorHurtoTexto);
+
+            let errores = [];
+            if (!correo) errores.push("- Correo del Responsable Regional (Destino PDF)");
+            if (!deb) errores.push("- DEB Consecutivo");
+            if (!ot) errores.push("- Número de Orden de Trabajo (OT)");
+            if (!fecha) errores.push("- Fecha de hallazgo");
+            if (!ciudad) errores.push("- Ciudad");
+            if (valorHurtoNum <= 0) errores.push("- El valor total del hurto debe ser mayor a $ 0 (Seleccione algún elemento o componente afectado)");
+
+            if (errores.length > 0) {
+                alert("⚠️ Por favor complete los siguientes campos obligatorios antes de generar y enviar el reporte:\n\n" + errores.join("\n"));
+                return;
+            }
+
+            alert("✅ ¡Validación exitosa! Denuncio radicado con éxito asociado a la OT: " + ot + "\n\n📄 El PDF generado ha sido enviado automáticamente al correo: " + correo);
+            cambiarVista('tabla');
+        }
+    </script>
+
+</body>
+</html>
